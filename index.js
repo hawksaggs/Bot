@@ -1,6 +1,9 @@
 const restify = require('restify')
     , builder = require('botbuilder')
+    , env = require('dotenv-loader')
     ;
+
+env.load();
 
 var server = restify.createServer();
 
@@ -8,7 +11,10 @@ server.listen(process.env.port || process.env.PORT || 3979, function () {
     console.log('%s listening to %s', server.name, server.url);
 });
 
-var connector = new builder.ChatConnector();
+var connector = new builder.ChatConnector({
+    'appId': process.env['MICROSOFT_APP_ID'],
+    'appPassword':process.env['MICROSOFT_APP_PASSWORD']
+});
 
 server.post('/api/messages', connector.listen());
 
