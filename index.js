@@ -1,11 +1,10 @@
 const restify = require('restify')
     , builder = require('botbuilder')
-    , env = require('dotenv-loader')
+    , env = require('dotenv')
+    , helperFunction = require('./helper/helper')
     ;
 
-env.load().on('error', (err) => {
-    console.log(err);
-});
+env.load();
 
 var server = restify.createServer();
 
@@ -14,20 +13,17 @@ server.listen(process.env.port || process.env.PORT || 3979, function () {
 });
 
 var connector = new builder.ChatConnector({
-    'appId': 'ede3d494-6bbb-4475-9642-713e6e788da0',
-    'appPassword':'fKbpoNs1N6tiGYTdbxeYvKi'
+    'appId': process.env.MICROSOFT_APP_ID,
+    'appPassword': process.env.MICROSOFT_APP_PASSWORD
 });
-// console.log(connector);
+
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector);
 
 bot.dialog('/', [
     function (session) {
-        // if (!session.conversationData) {
-            // session.send('Hi!, Can you Please fill up your KPI through KPI BOT');
             builder.Prompts.text(session, "Hi!, Can you Please fill up your KPI through KPI BOT \n Enter Yes or No.");    
-        // }
     },
     function (session, results) {
         if (results.response.toLowerCase() == 'yes') {
@@ -79,8 +75,15 @@ bot.dialog('/', [
             if (session.conversationData.param3) {
                 session.conversationData.param4 = results.response;
                 console.log(session.conversationData);
-                session.send('Thank you for the KPI Evaluation.').endConversation();
-
+                var headers = {
+                    'content-type':'application/json'
+                }
+                helperFunction.hitAPI('POST', '/employee', session.conversationData, headers, function (err, response) {
+                    if (err) {
+                        console.log(err);  
+                    } 
+                    session.send('Thank you for the KPI Evaluation.').endConversation(); 
+                });
             } else if (session.conversationData.param2) {
                 session.conversationData.param3 = results.response;
                 builder.Prompts.text(session, 'For Other Wow Factor: \n Proactive risk identification / migration');
