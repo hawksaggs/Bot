@@ -16,8 +16,10 @@ var bot = new builder.UniversalBot(connector);
 
 bot.dialog('/', [
     function (session) {
-        session.send('Hi!, Can you Please fill up your KPI through KPI BOT');
-        builder.Prompts.text(session, 'Enter Yes or No.');
+        // if (!session.conversationData) {
+            // session.send('Hi!, Can you Please fill up your KPI through KPI BOT');
+            builder.Prompts.text(session, "Hi!, Can you Please fill up your KPI through KPI BOT \n Enter Yes or No.");    
+        // }
     },
     function (session, results) {
         if (results.response.toLowerCase() == 'yes') {
