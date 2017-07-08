@@ -3,7 +3,9 @@ const restify = require('restify')
     , env = require('dotenv-loader')
     ;
 
-env.load();
+env.load().on('error', (err) => {
+    console.log(err);
+});
 
 var server = restify.createServer();
 
@@ -12,10 +14,10 @@ server.listen(process.env.port || process.env.PORT || 3979, function () {
 });
 
 var connector = new builder.ChatConnector({
-    'appId': process.env['MICROSOFT_APP_ID'],
-    'appPassword':process.env['MICROSOFT_APP_PASSWORD']
+    'appId': 'ede3d494-6bbb-4475-9642-713e6e788da0',
+    'appPassword':'fKbpoNs1N6tiGYTdbxeYvKi'
 });
-
+// console.log(connector);
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector);
