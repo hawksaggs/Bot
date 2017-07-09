@@ -21,6 +21,17 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector);
+var user = [];
+bot.on('conversationUpdate', function (message) {
+    if (user.indexOf(message.user.id) == -1) {
+        user.push(message.user.id);
+        var reply = new builder.Message()
+            .address(message.address)
+            .text("Welcome to Kpi Bot.");
+        bot.send(reply);    
+        bot.beginDialog('/');
+    }
+});
 
 bot.dialog('/', [
     function (session) {
@@ -145,7 +156,11 @@ bot.dialog('employee', [
                     if (err) {
                         console.log(err);  
                     } 
-                    session.send('Thank you for the KPI Evaluation.').endConversation(); 
+                    if (response.error) {
+                        session.send(response.message).endConversation();     
+                    } else {
+                        session.send('Thank you for the KPI Evaluation.').endConversation(); 
+                    }
                 });
         }
     }
@@ -181,12 +196,18 @@ bot.dialog('tl', [
                 }
                 
                 body = JSON.parse(body);
-                // console.log(body);
-                var employeeName = body.data.map(function (value) {
-                    return value.name + '(' + value.employeeId + ')';
-                });
-                console.log(employeeName);
-                builder.Prompts.choice(session, 'Choose your team member? ', employeeName);
+                if (body.error) {
+                    session.send(body.message).endConversation();
+                }
+                if (!body.error && body.data.length > 0) {
+                    var employeeName = body.data.map(function (value) {
+                        return value.name + '(' + value.employeeId + ')';
+                    });
+                    builder.Prompts.choice(session, 'Choose your team member? ', employeeName);    
+                } else {
+                    session.send('Look like nobody has filled the KPI Evaluation form yet.').endConversation();
+                }
+                
             });
         } else {
             // builder.Prompts.text(session, 'What\'s your name: ');
@@ -294,7 +315,11 @@ bot.dialog('tl', [
                     if (err) {
                         console.log(err);  
                     } 
-                    session.send('Thank you for the KPI Evaluation.').endConversation(); 
+                    if (response.error) {
+                        session.send(response.message).endConversation();
+                    } else {
+                        session.send('Thank you for the KPI Evaluation.').endConversation();
+                    }
                 });
         }
     }
