@@ -51,79 +51,79 @@ bot.dialog('employee', [
     },
     function (session, results) {
         if (results.response.entity.toLowerCase() == 'yes') {
-            var card = {
-                'contentType': 'application/vnd.microsoft.card.adaptive',
-                'content': {
-                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-                    'type': 'AdaptiveCard',
-                    'version': '1.0',
-                    'speak':'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-                    'body': [
-                        {
-                            'type': 'Container',
-                            'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
-                            'items': [
-                                {
-                                    'type': 'ColumnSet',
-                                    'columns': [
-                                        {
-                                            'type': 'Column',
-                                            'size': 'stretch',
-                                            'items': [
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-                                                    'weight': 'bolder',
-                                                    'isSubtle': true,
-                                                    'wrap':true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': 'Rating is given as per the defined rule:',
-                                                    'weight': 'bolder',
-                                                    'isSubtle': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '0-2:Poor',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '3-4:Unsatisfactory',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '5-6:Average',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '7-8:Good',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '9-10:Excellent',
-                                                    'wrap': true
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            };
-            var msg = new builder.Message(session)
-                .addAttachment(card);
-            session.send(msg);
-            var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.text(session, msg);
+            // var card = {
+            //     'contentType': 'application/vnd.microsoft.card.adaptive',
+            //     'content': {
+            //         '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            //         'type': 'AdaptiveCard',
+            //         'version': '1.0',
+            //         'speak':'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+            //         'body': [
+            //             {
+            //                 'type': 'Container',
+            //                 'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
+            //                 'items': [
+            //                     {
+            //                         'type': 'ColumnSet',
+            //                         'columns': [
+            //                             {
+            //                                 'type': 'Column',
+            //                                 'size': 'stretch',
+            //                                 'items': [
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+            //                                         'weight': 'bolder',
+            //                                         'isSubtle': true,
+            //                                         'wrap':true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': 'Rating is given as per the defined rule:',
+            //                                         'weight': 'bolder',
+            //                                         'isSubtle': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '0-2:Poor',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '3-4:Unsatisfactory',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '5-6:Average',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '7-8:Good',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '9-10:Excellent',
+            //                                         'wrap': true
+            //                                     }
+            //                                 ]
+            //                             }
+            //                         ]
+            //                     }
+            //                 ]
+            //             }
+            //         ]
+            //     }
+            // };
+            // var msg = new builder.Message(session)
+            //     .addAttachment(card);
+            session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)');
+            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.text(session,'What\'s your name: ');
         } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
@@ -134,10 +134,10 @@ bot.dialog('employee', [
     function (session, results) {
         if (results.response) {
             session.conversationData.name = results.response;
-            var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, 'What\'s your Employee Id: ');
         } else {
             builder.Prompts.text(session, 'What\'s your name: ');
       }  
@@ -145,141 +145,141 @@ bot.dialog('employee', [
     function (session, results) {
         if (results.response) {
             session.conversationData.employeeId = results.response;
-            var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            session.send(msg);
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            session.send('Productivity & Quality');
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         } else {
-            var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, 'What\'s your Employee Id: ');
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
                 // builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
-            // builder.Prompts.number(session, sendTextPrompt(session));
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            // builder.Prompts.number(session, msg);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));    
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
-            // builder.Prompts.number(session, sendTextPrompt(session));
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            // builder.Prompts.number(session, msg);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));    
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
-            // builder.Prompts.text(session, sendTextPrompt(session));
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            // builder.Prompts.number(session, msg);
+            builder.Prompts.text(session, sendTextPrompt(session));
         }  
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));    
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
-                // builder.Prompts.number(session, sendTextPrompt(session));
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                // builder.Prompts.number(session, msg);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
-            // builder.Prompts.number(session, sendTextPrompt(session));
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            // builder.Prompts.number(session, msg);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
@@ -312,79 +312,79 @@ bot.dialog('tl', [
     },
     function (session, results) {
         if (results.response.entity.toLowerCase() == 'yes') {
-            var card = {
-                'contentType': 'application/vnd.microsoft.card.adaptive',
-                'content': {
-                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-                    'type': 'AdaptiveCard',
-                    'version': '1.0',
-                    'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-                    'body': [
-                        {
-                            'type': 'Container',
-                            'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
-                            'items': [
-                                {
-                                    'type': 'ColumnSet',
-                                    'columns': [
-                                        {
-                                            'type': 'Column',
-                                            'size': 'stretch',
-                                            'items': [
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-                                                    'weight': 'bolder',
-                                                    'isSubtle': true,
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': 'Rating is given as per the defined rule:',
-                                                    'weight': 'bolder',
-                                                    'isSubtle': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '0-2:Poor',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '3-4:Unsatisfactory',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '5-6:Average',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '7-8:Good',
-                                                    'wrap': true
-                                                },
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': '9-10:Excellent',
-                                                    'wrap': true
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            };
-            var msg = new builder.Message(session)
-                .addAttachment(card);
-            session.send(msg);
-            var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.text(session, msg);
+            // var card = {
+            //     'contentType': 'application/vnd.microsoft.card.adaptive',
+            //     'content': {
+            //         '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            //         'type': 'AdaptiveCard',
+            //         'version': '1.0',
+            //         'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+            //         'body': [
+            //             {
+            //                 'type': 'Container',
+            //                 'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
+            //                 'items': [
+            //                     {
+            //                         'type': 'ColumnSet',
+            //                         'columns': [
+            //                             {
+            //                                 'type': 'Column',
+            //                                 'size': 'stretch',
+            //                                 'items': [
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+            //                                         'weight': 'bolder',
+            //                                         'isSubtle': true,
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': 'Rating is given as per the defined rule:',
+            //                                         'weight': 'bolder',
+            //                                         'isSubtle': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '0-2:Poor',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '3-4:Unsatisfactory',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '5-6:Average',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '7-8:Good',
+            //                                         'wrap': true
+            //                                     },
+            //                                     {
+            //                                         'type': 'TextBlock',
+            //                                         'text': '9-10:Excellent',
+            //                                         'wrap': true
+            //                                     }
+            //                                 ]
+            //                             }
+            //                         ]
+            //                     }
+            //                 ]
+            //             }
+            //         ]
+            //     }
+            // };
+            // var msg = new builder.Message(session)
+            //     .addAttachment(card);
+            session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)');
+            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.text(session, 'What\'s your name: ');
         } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
@@ -425,10 +425,10 @@ bot.dialog('tl', [
                 
             });
         } else {
-            var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.text(session, msg);
+            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.text(session, 'What\'s your name: ');
       }  
     },
     function (session, results) {
@@ -447,131 +447,131 @@ bot.dialog('tl', [
 
                 body = JSON.parse(body);
                 session.conversationData.employeeRating = body.data;
-                var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                session.send(msg);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.text(session, msg);
+                // var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                session.send('Productivity & Quality');
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.text(session, sendTextPrompt(session));
             });
             
         } else {
-            var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, 'What\'s your Employee Id: ');
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }  
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             } else {
                 setConversationData(session, results);
-                var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                var msg = new builder.Message(session)
-                    .addAttachment(promptCard);
-                builder.Prompts.number(session, msg);
+                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+                // var msg = new builder.Message(session)
+                //     .addAttachment(promptCard);
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            var msg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.number(session, msg);
+            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
+            // var msg = new builder.Message(session)
+            //     .addAttachment(promptCard);
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
