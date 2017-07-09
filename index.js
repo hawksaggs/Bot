@@ -21,21 +21,22 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector);
-var user = [];
-bot.on('conversationUpdate', function (message) {
-    if (user.indexOf(message.user.id) == -1) {
-        user.push(message.user.id);
-        var reply = new builder.Message()
-            .address(message.address)
-            .text("Welcome to Kpi Bot.");
-        bot.send(reply);    
-        bot.beginDialog('/');
-    }
-});
 
 bot.dialog('/', [
     function (session) {
-        builder.Prompts.choice(session, 'Are you? ', ['Employee', 'TL']);
+        session.say('Hello');
+        session.say('Please hold while I calculate a response.',
+            'Please hold while I calculate a response.',
+            { inputHint: builder.InputHint.ignoringInput }
+        );
+        var msg = new builder.Message(session)
+            .speak('This is the text that will be spoken.')
+            .inputHint(builder.InputHint.acceptingInput);
+        session.send(msg);
+        builder.Prompts.choice(session,
+            'Are you? ',
+            ['Employee', 'TL'],
+            { listStyle: builder.ListStyle.button });
     },
     function (session,results) {
         if (results.response.entity == 'Employee') {
@@ -50,14 +51,118 @@ bot.dialog('/', [
 
 bot.dialog('employee', [
     function (session) { 
-            session.conversationData.productivityAndQuality = {};
-            builder.Prompts.text(session, "Hi!, Can you Please fill up your KPI through KPI BOT \n Enter Yes or No.");    
+        session.conversationData.productivityAndQuality = {};
+        builder.Prompts.choice(session,
+            'Can you Please fill up your KPI through KPI BOT.',
+            ['Yes', 'No'],
+            { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
-        if (results.response.toLowerCase() == 'yes') {
-            session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least. Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,7-8:Good,9-10:Excellent)');
-            builder.Prompts.text(session, 'What\'s your name: ');
-        } else if (results.response.toLowerCase() == 'no') {
+        if (results.response.entity.toLowerCase() == 'yes') {
+            var card = {
+                'contentType': 'application/vnd.microsoft.card.adaptive',
+                'content': {
+                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+                    'type': 'AdaptiveCard',
+                    'version': '1.0',
+                    'body': [
+                        {
+                            'type': 'Container',
+                            'items': [
+                                {
+                                    'type': 'ColumnSet',
+                                    'columns': [
+                                        {
+                                            'type': 'Column',
+                                            'size': 'stretch',
+                                            'items': [
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+                                                    'weight': 'bolder',
+                                                    'isSubtle': true,
+                                                    'wrap':true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': 'Rating is given as per the defined rule:',
+                                                    'weight': 'bolder',
+                                                    'isSubtle': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '0-2:Poor',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '3-4:Unsatisfactory',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '5-6:Average',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '7-8:Good',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '9-10:Excellent',
+                                                    'wrap': true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+            var msg = new builder.Message(session)
+                .addAttachment(card);
+            session.send(msg);
+            var promptCard = {
+                'contentType': 'application/vnd.microsoft.card.adaptive',
+                'content': {
+                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+                    'type': 'AdaptiveCard',
+                    'version': '1.0',
+                    'body': [
+                        {
+                            'type': 'Container',
+                            'items': [
+                                {
+                                    'type': 'ColumnSet',
+                                    'columns': [
+                                        {
+                                            'type': 'Column',
+                                            'size': 'stretch',
+                                            'items': [
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': 'What\'s your name: ',
+                                                    'weight': 'bolder',
+                                                    'isSubtle': true,
+                                                    'wrap': true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+            var promptMsg = new builder.Message(session)
+                .addAttachment(promptCard);
+            builder.Prompts.text(session, promptMsg);
+        } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
             session.send('I am learning day by day, but this time i don\'t understand what you are saying.');
@@ -76,7 +181,7 @@ bot.dialog('employee', [
         if (results.response) {
             session.conversationData.employeeId = results.response;
             session.send('Productivity & Quality');
-            builder.Prompts.text(session, sendTextPrompt(session));
+            builder.Prompts.number(session, sendTextPrompt(session));
         } else {
             builder.Prompts.text(session, 'What\'s your Employee Id: ');
         }
@@ -85,49 +190,49 @@ bot.dialog('employee', [
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             }
         } else {
-            builder.Prompts.text(session, sendTextPrompt(session));
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                builder.Prompts.text(session, sendTextPrompt(session));
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            builder.Prompts.text(session, sendTextPrompt(session));
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                builder.Prompts.text(session, sendTextPrompt(session));
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            builder.Prompts.text(session, sendTextPrompt(session));
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                builder.Prompts.text(session, sendTextPrompt(session));
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
             builder.Prompts.text(session, sendTextPrompt(session));
@@ -137,13 +242,13 @@ bot.dialog('employee', [
         if (results.response) {
             if (checkNumber(results) != '') {
                 session.send(checkNumber(results));
-                builder.Prompts.text(session, sendTextPrompt(session));    
+                builder.Prompts.number(session, sendTextPrompt(session));    
             } else {
                 setConversationData(session, results);
-                builder.Prompts.text(session, sendTextPrompt(session));
+                builder.Prompts.number(session, sendTextPrompt(session));
             }
         } else {
-            builder.Prompts.text(session, sendTextPrompt(session));
+            builder.Prompts.number(session, sendTextPrompt(session));
         }
     },
     function (session, results) {
@@ -324,6 +429,24 @@ bot.dialog('tl', [
         }
     }
 ]);
+
+//=========================================================
+// Bots Events
+//=========================================================
+
+// Sends greeting message when the bot is first added to a conversation
+bot.on('conversationUpdate', function (message) {
+    if (message.membersAdded) {
+        message.membersAdded.forEach(function (identity) {
+            if (identity.id === message.address.bot.id) {
+                var reply = new builder.Message()
+                    .address(message.address)
+                    .text('Welcome to Kpi Bot.');
+                bot.send(reply);
+            }
+        });
+    }
+});
 
 function setConversationData(session, results) {
     var productivityAndQuality = [
