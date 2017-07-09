@@ -24,13 +24,14 @@ var bot = new builder.UniversalBot(connector);
 
 bot.dialog('/', [
     function (session) {
+        session.say('Hello');
         builder.Prompts.choice(session,
-            'Are you? ',
+            'Are you Employee or TL? ',
             ['Employee', 'TL'],
             { listStyle: builder.ListStyle.button });
     },
     function (session,results) {
-        if (results.response.entity == 'Employee') {
+        if (results.response.entity.toLowerCase() == 'employee' || results.response.entity.toLowerCase() == 'employed') {
             session.beginDialog('employee');
         } else if (results.response.entity == 'TL') {
             session.beginDialog('tl');
@@ -56,9 +57,11 @@ bot.dialog('employee', [
                     '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
                     'type': 'AdaptiveCard',
                     'version': '1.0',
+                    'speak':'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
                     'body': [
                         {
                             'type': 'Container',
+                            'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
                             'items': [
                                 {
                                     'type': 'ColumnSet',
@@ -117,42 +120,7 @@ bot.dialog('employee', [
             var msg = new builder.Message(session)
                 .addAttachment(card);
             session.send(msg);
-            var promptCard = {
-                'contentType': 'application/vnd.microsoft.card.adaptive',
-                'content': {
-                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-                    'type': 'AdaptiveCard',
-                    'version': '1.0',
-                    'body': [
-                        {
-                            'type': 'Container',
-                            'items': [
-                                {
-                                    'type': 'ColumnSet',
-                                    'columns': [
-                                        {
-                                            'type': 'Column',
-                                            'size': 'stretch',
-                                            'items': [
-                                                {
-                                                    'type': 'TextBlock',
-                                                    'text': 'What\'s your name: ',
-                                                    'weight': 'bolder',
-                                                    'isSubtle': true,
-                                                    'wrap': true
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            };
-            var promptMsg = new builder.Message(session)
-                .addAttachment(promptCard);
-            builder.Prompts.text(session, promptMsg);
+            builder.Prompts.text(session, 'What\'s your name: ');
         } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
@@ -163,7 +131,7 @@ bot.dialog('employee', [
     function (session, results) {
         if (results.response) {
             session.conversationData.name = results.response;
-            builder.Prompts.text(session, 'What\'s your Employee Id: ');
+            builder.Prompts.number(session, 'What\'s your Employee Id: ');
         } else {
             builder.Prompts.text(session, 'What\'s your name: ');
       }  
@@ -174,7 +142,7 @@ bot.dialog('employee', [
             session.send('Productivity & Quality');
             builder.Prompts.number(session, sendTextPrompt(session));
         } else {
-            builder.Prompts.text(session, 'What\'s your Employee Id: ');
+            builder.Prompts.number(session, 'What\'s your Employee Id: ');
         }
     },
     function (session, results) {
@@ -265,13 +233,85 @@ bot.dialog('employee', [
 bot.dialog('tl', [
     function (session) { 
             session.conversationData.productivityAndQuality = {};
-            builder.Prompts.text(session, "Hi!, Can you Please fill up your KPI through KPI BOT \n Enter Yes or No.");    
+            // builder.Prompts.text(session, "Hi!, Can you Please fill up your KPI through KPI BOT \n Enter Yes or No.");    
+            builder.Prompts.choice(session,
+                'Can you Please fill up your KPI through KPI BOT.',
+                ['Yes', 'No'],
+                { listStyle: builder.ListStyle.button });
     },
     function (session, results) {
-        if (results.response.toLowerCase() == 'yes') {
-            session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least. Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,7-8:Good,9-10:Excellent)');
+        if (results.response.entity.toLowerCase() == 'yes') {
+            var card = {
+                'contentType': 'application/vnd.microsoft.card.adaptive',
+                'content': {
+                    '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+                    'type': 'AdaptiveCard',
+                    'version': '1.0',
+                    'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+                    'body': [
+                        {
+                            'type': 'Container',
+                            'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
+                            'items': [
+                                {
+                                    'type': 'ColumnSet',
+                                    'columns': [
+                                        {
+                                            'type': 'Column',
+                                            'size': 'stretch',
+                                            'items': [
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
+                                                    'weight': 'bolder',
+                                                    'isSubtle': true,
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': 'Rating is given as per the defined rule:',
+                                                    'weight': 'bolder',
+                                                    'isSubtle': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '0-2:Poor',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '3-4:Unsatisfactory',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '5-6:Average',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '7-8:Good',
+                                                    'wrap': true
+                                                },
+                                                {
+                                                    'type': 'TextBlock',
+                                                    'text': '9-10:Excellent',
+                                                    'wrap': true
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            };
+            var msg = new builder.Message(session)
+                .addAttachment(card);
+            session.send(msg);
             builder.Prompts.text(session, 'What\'s your name: ');
-        } else if (results.response.toLowerCase() == 'no') {
+        } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
             session.send('I am learning day by day, but this time i don\'t understand what you are saying.');
@@ -431,6 +471,7 @@ bot.on('conversationUpdate', function (message) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
                 var reply = new builder.Message()
+                    .speak('Welcome to Kpi Bot')    
                     .address(message.address)
                     .text('Welcome to Kpi Bot.');
                 bot.send(reply);
@@ -493,8 +534,46 @@ function sendTextPrompt(session) {
 
 function checkNumber(results) {
     if (results.response > 10) {
-        return 'Please give the rating from 1-10.';
+        return 'Please give the rating from 0-10.';
     } else {
         return '';
     }
+}
+
+function makeAdaptiveCard(speak,text) {
+    var promptCard = {
+        'contentType': 'application/vnd.microsoft.card.adaptive',
+        'content': {
+            '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
+            'type': 'AdaptiveCard',
+            'version': '1.0',
+            'speak': speak,
+            'body': [
+                {
+                    'type': 'Container',
+                    'items': [
+                        {
+                            'type': 'ColumnSet',
+                            'columns': [
+                                {
+                                    'type': 'Column',
+                                    'size': 'stretch',
+                                    'items': [
+                                        {
+                                            'type': 'TextBlock',
+                                            'text': text,
+                                            'weight': 'bolder',
+                                            'isSubtle': true,
+                                            'wrap': true
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    };
+    return promptCard;
 }
