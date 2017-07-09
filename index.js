@@ -24,15 +24,6 @@ var bot = new builder.UniversalBot(connector);
 
 bot.dialog('/', [
     function (session) {
-        session.say('Hello');
-        session.say('Please hold while I calculate a response.',
-            'Please hold while I calculate a response.',
-            { inputHint: builder.InputHint.ignoringInput }
-        );
-        var msg = new builder.Message(session)
-            .speak('This is the text that will be spoken.')
-            .inputHint(builder.InputHint.acceptingInput);
-        session.send(msg);
         builder.Prompts.choice(session,
             'Are you? ',
             ['Employee', 'TL'],
