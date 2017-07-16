@@ -212,8 +212,10 @@ bot.dialog('TL', [
             if (err) {
                 console.log(err);
             }
-
-            body = JSON.parse(body);
+            if (typeof body == 'string') {
+                body = JSON.parse(body);    
+            }
+            
             if (body.error) {
                 session.send(body.message).endConversation();
             }
@@ -263,7 +265,7 @@ bot.dialog('TLEnd', [
 
         session.dialogData.tl = args ? args.tl : {};
         session.dialogData.tl.productivityAndQuality = args ? args.tl.productivityAndQuality : {};
-        // session.dialogData.tl.weightage = args ? args.tl.weightage : {};
+        session.dialogData.tl.remark = args ? args.tl.remark : {};
 
         // Prompt user for next field
 
@@ -273,27 +275,61 @@ bot.dialog('TLEnd', [
 
         // Save users reply
         var numberCheck = checkNumber(results);
-        console.log(numberCheck);
+
         if (!numberCheck) {
             var field = questions[session.dialogData.index++].field;
             session.dialogData.tl.productivityAndQuality[field] = results.response;
-            // session.dialogData.tl.weightage[field] = questions[(session.dialogData.index - 1)].weightage;
-
+            builder.Prompts.choice(session,
+                'Any Remarks ?',
+                ['Yes', 'No'],
+                { listStyle: builder.ListStyle.button });
         } else {
             // Next field
             session.send(numberCheck);
-            // session.replaceDialog('employee', session.dialogData);
         }
+    },
+    function (session, results) {
+        if (results.response.entity.toLowerCase() == 'yes') {
+            builder.Prompts.text(session,'Remarks: ');
+        } else {
+            if (session.dialogData.index >= questions.length) {
 
+                // Return completed form
+                session.conversationData.tl = session.dialogData.tl;
 
+                var headers = {
+                    'content-type': 'application/json'
+                }
+                helperFunction.hitAPI('POST', '/teamLeader', session.conversationData, headers, function (err, response) {
+                    if (err) {
+                        console.log(err);
+                    }
+                    console.log(response);
+                    if (response.error) {
+                        session.send(response.message).endConversation();
+                    } else {
+                        session.send('Thank you for the KPI Evaluation.').endConversation();
+                    }
+                });
+            } else {
+
+                // Next field
+                session.replaceDialog('TLEnd', session.dialogData);
+
+            }    
+        }
+    },
+    function (session, results) {
         // Check for end of form
-
+        if (results.response) {
+            var field = questions[(session.dialogData.index -1)].field;
+            session.dialogData.tl.remark[field] = results.response;
+        }
         if (session.dialogData.index >= questions.length) {
 
             // Return completed form
-            // console.log(session.dialogData);
             session.conversationData.tl = session.dialogData.tl;
-            console.log(session.conversationData);
+
             var headers = {
                 'content-type': 'application/json'
             }
@@ -311,7 +347,6 @@ bot.dialog('TLEnd', [
         } else {
 
             // Next field
-
             session.replaceDialog('TLEnd', session.dialogData);
 
         }
