@@ -22,28 +22,43 @@ server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector);
 
+var questions = [];
+var generalQuestions = [
+    { field: 'name', value: 'What\'s your name ?' },
+    { field: 'employeeId', value: 'What\'s your EmployeeId ?' }
+]
+
 bot.dialog('/', [
     function (session) {
         session.say('Hello');
-        builder.Prompts.choice(session,
-            'Are you Employee or TL? ',
-            ['Employee', 'TL'],
-            { listStyle: builder.ListStyle.button });
+        var options = {
+            method: 'GET',
+            url: process.env.API_URL + '/kpi-param'
+        };
+        request(options, function (error, response, body) {
+            if (error) {
+                console.log(error);
+            }
+            // console.log(body);
+            if (body) {
+                body = JSON.parse(body);
+                questions = body.data.productivityAndQuality;
+                console.log(questions);
+            }
+            builder.Prompts.choice(session,
+                'Are you Employee or TL? ',
+                ['Employee', 'TL'],
+                { listStyle: builder.ListStyle.button });
+        });
     },
-    function (session,results) {
-        if (results.response.entity.toLowerCase() == 'employee' || results.response.entity.toLowerCase() == 'employed') {
-            session.beginDialog('employee');
-        } else if (results.response.entity == 'TL') {
-            session.beginDialog('tl');
-        } else {
-            session.replaceDialog('/', { isReprompt: true });
-        }
+    function (session, results) {
+        session.conversationData.type = results.response.entity.toLowerCase();
+        session.beginDialog('start');
     }
-])
+]);
 
-bot.dialog('employee', [
-    function (session) { 
-        session.conversationData.productivityAndQuality = {};
+bot.dialog('start', [
+    function (session) {
         builder.Prompts.choice(session,
             'Can you Please fill up your KPI through KPI BOT.',
             ['Yes', 'No'],
@@ -51,545 +66,254 @@ bot.dialog('employee', [
     },
     function (session, results) {
         if (results.response.entity.toLowerCase() == 'yes') {
-            // var card = {
-            //     'contentType': 'application/vnd.microsoft.card.adaptive',
-            //     'content': {
-            //         '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            //         'type': 'AdaptiveCard',
-            //         'version': '1.0',
-            //         'speak':'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-            //         'body': [
-            //             {
-            //                 'type': 'Container',
-            //                 'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
-            //                 'items': [
-            //                     {
-            //                         'type': 'ColumnSet',
-            //                         'columns': [
-            //                             {
-            //                                 'type': 'Column',
-            //                                 'size': 'stretch',
-            //                                 'items': [
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-            //                                         'weight': 'bolder',
-            //                                         'isSubtle': true,
-            //                                         'wrap':true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': 'Rating is given as per the defined rule:',
-            //                                         'weight': 'bolder',
-            //                                         'isSubtle': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '0-2:Poor',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '3-4:Unsatisfactory',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '5-6:Average',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '7-8:Good',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '9-10:Excellent',
-            //                                         'wrap': true
-            //                                     }
-            //                                 ]
-            //                             }
-            //                         ]
-            //                     }
-            //                 ]
-            //             }
-            //         ]
-            //     }
-            // };
-            // var msg = new builder.Message(session)
-            //     .addAttachment(card);
             session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)');
-            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.text(session,'What\'s your name: ');
+            if (session.conversationData.type == 'employee') {
+                session.beginDialog('generalQuestion');
+            } else {
+                session.beginDialog('TL');
+            }
+
         } else if (results.response.entity.toLowerCase() == 'no') {
             session.send('May be another time.').endDialog();
         } else {
             session.send('I am learning day by day, but this time i don\'t understand what you are saying.');
             session.send('So, Please Enter Yes or No');
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            session.conversationData.name = results.response;
-            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, 'What\'s your Employee Id: ');
-        } else {
-            builder.Prompts.text(session, 'What\'s your name: ');
-      }  
-    },
-    function (session, results) {
-        if (results.response) {
-            session.conversationData.employeeId = results.response;
-            // var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            session.send('Productivity & Quality');
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        } else {
-            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, 'What\'s your Employee Id: ');
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-                // builder.Prompts.number(session, sendTextPrompt(session));    
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            // builder.Prompts.number(session, msg);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));    
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            // builder.Prompts.number(session, msg);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));    
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            // builder.Prompts.number(session, msg);
-            builder.Prompts.text(session, sendTextPrompt(session));
-        }  
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));    
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                // builder.Prompts.number(session, msg);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            // builder.Prompts.number(session, msg);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            setConversationData(session, results);
-                var headers = {
-                    'content-type':'application/json'
-                }
-                helperFunction.hitAPI('POST', '/employee', session.conversationData, headers, function (err, response) {
-                    if (err) {
-                        console.log(err);  
-                    } 
-                    if (response.error) {
-                        session.send(response.message).endConversation();     
-                    } else {
-                        session.send('Thank you for the KPI Evaluation.').endConversation(); 
-                    }
-                });
         }
     }
 ]);
 
-bot.dialog('tl', [
-    function (session) { 
-            session.conversationData.productivityAndQuality = {};
-            builder.Prompts.choice(session,
-                'Can you Please fill up your KPI through KPI BOT.',
-                ['Yes', 'No'],
-                { listStyle: builder.ListStyle.button });
-    },
-    function (session, results) {
-        if (results.response.entity.toLowerCase() == 'yes') {
-            // var card = {
-            //     'contentType': 'application/vnd.microsoft.card.adaptive',
-            //     'content': {
-            //         '$schema': 'http://adaptivecards.io/schemas/adaptive-card.json',
-            //         'type': 'AdaptiveCard',
-            //         'version': '1.0',
-            //         'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-            //         'body': [
-            //             {
-            //                 'type': 'Container',
-            //                 'speak': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)',
-            //                 'items': [
-            //                     {
-            //                         'type': 'ColumnSet',
-            //                         'columns': [
-            //                             {
-            //                                 'type': 'Column',
-            //                                 'size': 'stretch',
-            //                                 'items': [
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': 'Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.',
-            //                                         'weight': 'bolder',
-            //                                         'isSubtle': true,
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': 'Rating is given as per the defined rule:',
-            //                                         'weight': 'bolder',
-            //                                         'isSubtle': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '0-2:Poor',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '3-4:Unsatisfactory',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '5-6:Average',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '7-8:Good',
-            //                                         'wrap': true
-            //                                     },
-            //                                     {
-            //                                         'type': 'TextBlock',
-            //                                         'text': '9-10:Excellent',
-            //                                         'wrap': true
-            //                                     }
-            //                                 ]
-            //                             }
-            //                         ]
-            //                     }
-            //                 ]
-            //             }
-            //         ]
-            //     }
-            // };
-            // var msg = new builder.Message(session)
-            //     .addAttachment(card);
-            session.send('Rating should be given on the scale of 10, in which 10 is the Top most and 0 is the Least.Rating is given as per the defined rule:(0-2:Poor,3-4:Unsatisfactory,5-6:Average,text,7-8:Good,9-10:Excellent)');
-            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.text(session, 'What\'s your name: ');
-        } else if (results.response.entity.toLowerCase() == 'no') {
-            session.send('May be another time.').endDialog();
-        } else {
-            session.send('I am learning day by day, but this time i don\'t understand what you are saying.');
-            session.send('So, Please Enter Yes or No');
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            session.conversationData.tlname = results.response;
-            var options = {
-                method: 'GET',
-                url: process.env.API_URL +'/employee/'+session.conversationData.tlname
-            };
+bot.dialog('generalQuestion', [
+    function (session, args) {
 
-            request(options, function (err, response, body) {
+        // Save previous state (create on first call)
+
+        session.dialogData.generalIndex = args ? args.generalIndex : 0;
+
+        session.dialogData.form = args ? args.form : {};
+
+
+        // Prompt user for next field
+
+        builder.Prompts.text(session, generalQuestions[session.dialogData.generalIndex].value);
+
+    },
+
+    function (session, results) {
+
+        // Save users reply
+
+        var field = generalQuestions[session.dialogData.generalIndex++].field;
+
+        session.dialogData.form[field] = results.response;
+
+
+
+        // Check for end of form
+
+        if (session.dialogData.generalIndex >= generalQuestions.length) {
+
+            // Return completed form
+            session.conversationData.name = session.dialogData.form.name;
+            session.conversationData.employeeId = session.dialogData.form.employeeId;
+
+            if (session.conversationData.type == 'employee') {
+                session.beginDialog('employee');
+            } else if (session.conversationData.type == 'tl') {
+                session.beginDialog('TL');
+            } else {
+                session.replaceDialog('/', { isReprompt: true });
+            }
+
+        } else {
+
+            // Next field
+
+            session.replaceDialog('generalQuestion', session.dialogData);
+
+        }
+
+    }
+]);
+
+bot.dialog('employee', [
+    function (session, args) {
+        session.dialogData.index = args ? args.index : 0;
+
+        session.dialogData.employee = args ? args.employee : {};
+        session.dialogData.employee.productivityAndQuality = args ? args.employee.productivityAndQuality : {};
+        session.dialogData.employee.weightage = args ? args.employee.weightage : {};
+
+        // Prompt user for next field
+
+        builder.Prompts.text(session, questions[session.dialogData.index].value);
+    },
+    function (session, results) {
+
+        // Save users reply
+
+
+        var numberCheck = checkNumber(results);
+        console.log(numberCheck);
+        if (!numberCheck) {
+            var field = questions[session.dialogData.index++].field;
+            session.dialogData.employee.productivityAndQuality[field] = results.response;
+            session.dialogData.employee.weightage[field] = questions[(session.dialogData.index - 1)].weightage;
+
+        } else {
+            // Next field
+            session.send(numberCheck);
+            // session.replaceDialog('employee', session.dialogData);
+        }
+
+
+        // Check for end of form
+
+        if (session.dialogData.index >= questions.length) {
+
+            // Return completed form
+            // console.log(session.dialogData);
+            session.conversationData.employee = session.dialogData.employee;
+            var headers = {
+                'content-type': 'application/json'
+            }
+            helperFunction.hitAPI('POST', '/employee', session.conversationData, headers, function (err, response) {
                 if (err) {
-                     console.log(err);
+                    console.log(err);
                 }
-                
-                body = JSON.parse(body);
-                if (body.error) {
-                    session.send(body.message).endConversation();
-                }
-                if (!body.error && body.data.length > 0) {
-                    var employeeName = body.data.map(function (value) {
-                        return value.name + '(' + value.employeeId + ')';
-                    });
-                    builder.Prompts.choice(
-                        session,
-                        'Choose your team member? ',
-                        employeeName,
-                        { listStyle: builder.ListStyle.button }
-                    );    
+                console.log(response);
+                if (response.error) {
+                    session.send(response.message).endConversation();
                 } else {
-                    session.send('Look like nobody has filled the KPI Evaluation form yet.').endConversation();
+                    session.send('Thank you for the KPI Evaluation.').endConversation();
                 }
-                
             });
         } else {
-            // var promptCard = makeAdaptiveCard('What\'s your name: ', 'What\'s your name: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.text(session, 'What\'s your name: ');
-      }  
-    },
-    function (session, results) {
-        if (results.response) {
-            session.conversationData.name = results.response.entity.split('(')[0];
-            session.conversationData.employeeId = results.response.entity.split('(')[1].split(')')[0];
-            session.conversationData.reportTo = session.conversationData.tlname;
-            var options = {
-                method: 'GET',
-                url: process.env.API_URL + '/employee/record/' + session.conversationData.employeeId
-            };
-            request(options, function (err, response, body) {
-                if (err) {
-                    return console.log(err);
-                }
 
-                body = JSON.parse(body);
-                session.conversationData.employeeRating = body.data;
-                // var promptCard = makeAdaptiveCard('Productivity & Quality', 'Productivity & Quality');
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                session.send('Productivity & Quality');
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.text(session, sendTextPrompt(session));
-            });
-            
-        } else {
-            // var promptCard = makeAdaptiveCard('What\'s your Employee Id: ', 'What\'s your Employee Id: ');
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, 'What\'s your Employee Id: ');
+            // Next field
+
+            session.replaceDialog('employee', session.dialogData);
+
         }
+    }
+]);
+
+bot.dialog('TL', [
+    function (session) {
+        builder.Prompts.text(session, 'What\'s your name: ');
     },
     function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
+        session.conversationData.tlname = results.response;
+        var options = {
+            method: 'GET',
+            url: process.env.API_URL + '/employee/' + session.conversationData.tlname
+        };
+
+        request(options, function (err, response, body) {
+            if (err) {
+                console.log(err);
             }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
+
+            body = JSON.parse(body);
+            if (body.error) {
+                session.send(body.message).endConversation();
             }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }  
-    },
-    function (session, results) {
-        if (results.response) {
-            if (checkNumber(results) != '') {
-                session.send(checkNumber(results));
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            } else {
-                setConversationData(session, results);
-                // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-                // var msg = new builder.Message(session)
-                //     .addAttachment(promptCard);
-                builder.Prompts.number(session, sendTextPrompt(session));
-            }
-        } else {
-            // var promptCard = makeAdaptiveCard(sendTextPrompt(session), sendTextPrompt(session));
-            // var msg = new builder.Message(session)
-            //     .addAttachment(promptCard);
-            builder.Prompts.number(session, sendTextPrompt(session));
-        }
-    },
-    function (session, results) {
-        if (results.response) {
-            setConversationData(session, results);
-                var headers = {
-                    'content-type':'application/json'
-                }
-                helperFunction.hitAPI('POST', '/teamLeader', session.conversationData, headers, function (err, response) {
-                    if (err) {
-                        console.log(err);  
-                    } 
-                    if (response.error) {
-                        session.send(response.message).endConversation();
-                    } else {
-                        session.send('Thank you for the KPI Evaluation.').endConversation();
-                    }
+            if (!body.error && body.data.length > 0) {
+                var employeeName = body.data.map(function (value) {
+                    return value.name + '(' + value.employeeId + ')';
                 });
+                builder.Prompts.choice(
+                    session,
+                    'Choose your team member? ',
+                    employeeName,
+                    { listStyle: builder.ListStyle.button }
+                );
+            } else {
+                session.send('Look like nobody has filled the KPI Evaluation form yet.').endConversation();
+            }
+
+        });
+    },
+    function (session, results) {
+        session.conversationData.name = results.response.entity.split('(')[0];
+        session.conversationData.employeeId = results.response.entity.split('(')[1].split(')')[0];
+        session.conversationData.reportTo = session.conversationData.tlname;
+        var options = {
+            method: 'GET',
+            url: process.env.API_URL + '/employee/record/' + session.conversationData.employeeId
+        };
+        request(options, function (err, response, body) {
+            if (err) {
+                return console.log(err);
+            }
+
+            body = JSON.parse(body);
+            session.conversationData.employeeRating = body.data;
+            session.conversationData.employeeRating.rating = {};
+            for (var i = 0; i < body.data.productivityAndQuality.length; i++){
+                session.conversationData.employeeRating.rating[body.data.productivityAndQuality[i].field] = body.data.productivityAndQuality[i].employee; 
+            }
+            session.beginDialog('TLEnd');
+        });
+    },
+]);
+
+bot.dialog('TLEnd', [
+    function (session, args) {
+        session.dialogData.index = args ? args.index : 0;
+
+        session.dialogData.tl = args ? args.tl : {};
+        session.dialogData.tl.productivityAndQuality = args ? args.tl.productivityAndQuality : {};
+        // session.dialogData.tl.weightage = args ? args.tl.weightage : {};
+
+        // Prompt user for next field
+
+        builder.Prompts.text(session, questions[session.dialogData.index].value + ': ' + session.conversationData.employeeRating.name + ' : ' + session.conversationData.employeeRating.rating[questions[session.dialogData.index].field]);
+    },
+    function (session, results) {
+
+        // Save users reply
+        var numberCheck = checkNumber(results);
+        console.log(numberCheck);
+        if (!numberCheck) {
+            var field = questions[session.dialogData.index++].field;
+            session.dialogData.tl.productivityAndQuality[field] = results.response;
+            // session.dialogData.tl.weightage[field] = questions[(session.dialogData.index - 1)].weightage;
+
+        } else {
+            // Next field
+            session.send(numberCheck);
+            // session.replaceDialog('employee', session.dialogData);
+        }
+
+
+        // Check for end of form
+
+        if (session.dialogData.index >= questions.length) {
+
+            // Return completed form
+            // console.log(session.dialogData);
+            session.conversationData.tl = session.dialogData.tl;
+            console.log(session.conversationData);
+            var headers = {
+                'content-type': 'application/json'
+            }
+            helperFunction.hitAPI('POST', '/teamLeader', session.conversationData, headers, function (err, response) {
+                if (err) {
+                    console.log(err);
+                }
+                console.log(response);
+                if (response.error) {
+                    session.send(response.message).endConversation();
+                } else {
+                    session.send('Thank you for the KPI Evaluation.').endConversation();
+                }
+            });
+        } else {
+
+            // Next field
+
+            session.replaceDialog('TLEnd', session.dialogData);
+
         }
     }
 ]);
@@ -604,7 +328,7 @@ bot.on('conversationUpdate', function (message) {
         message.membersAdded.forEach(function (identity) {
             if (identity.id === message.address.bot.id) {
                 var reply = new builder.Message()
-                    .speak('Welcome to Kpi Bot')    
+                    .speak('Welcome to Kpi Bot')
                     .address(message.address)
                     .text('Welcome to Kpi Bot.');
                 bot.send(reply);
@@ -673,7 +397,7 @@ function checkNumber(results) {
     }
 }
 
-function makeAdaptiveCard(speak,text) {
+function makeAdaptiveCard(speak, text) {
     var promptCard = {
         'contentType': 'application/vnd.microsoft.card.adaptive',
         'content': {
@@ -710,3 +434,13 @@ function makeAdaptiveCard(speak,text) {
     };
     return promptCard;
 }
+
+var questions = [
+
+    { field: 'name', prompt: "What's your name?" },
+
+    { field: 'age', prompt: "How old are you?" },
+
+    { field: 'state', prompt: "What state are you in?" }
+
+];
